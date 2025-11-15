@@ -1,12 +1,18 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
-import CreatePage from './pages/CreatePage';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import StartPage from '@/pages/StartPage';
+import CreateRoom from '@/pages/CreateRoom';
+import CreateSuccess from '@/pages/CreateSuccess';
 
 export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/create" element={<CreatePage />} />
+        {/* 기본 경로 설정 */}
+        <Route path="/" element={<Navigate to="/main" replace />} />
+        <Route path="/main" element={<StartPage />} />
+        <Route path="/create" element={<CreateRoom />} />
+        <Route path="/create/success" element={<CreateSuccess />} />
       </Routes>
     </>
   );
