@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { api } from '@/lib/axios';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +21,7 @@ const CreateRoomSchema = z.object({
     .trim()
     .min(1, '약속 제목은 필수입니다.')
     .max(50, '약속 제목은 50자 이하로 입력해주세요.'),
-  description: z
+  descriptions: z
     .string()
     .trim()
     .max(300, '약속 설명은 300자 이하로 입력해주세요.')
@@ -36,13 +37,20 @@ export default function CreateRoom() {
     resolver: zodResolver(CreateRoomSchema),
     defaultValues: {
       title: '',
-      description: '',
+      descriptions: '',
     },
   });
 
-  function onSubmit(values: CreateRoomFormValues) {
-    navigate('/create/success');
-  }
+  const onSubmit = async (values: CreateRoomFormValues) => {
+    try {
+      const { data } = await api.post<{ link: string }>('/room/create', values);
+      navigate('/create/success', {
+        state: { link: data.link },
+      });
+    } catch (err) {
+      alert('약속 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  };
 
   return (
     // 바깥 프레임
@@ -72,7 +80,7 @@ export default function CreateRoom() {
               />
               <FormField
                 control={form.control}
-                name="description"
+                name="descriptions"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>약속 설명 (선택)</FormLabel>
