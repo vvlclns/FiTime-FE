@@ -18,7 +18,7 @@ export interface TimeTableProps {
 }
 
 const TimeTable = ({
-  days = ['월', '화', '수', '목', '금'],
+  days = ['월', '화', '수', '목', '금', '토', '일'],
   startTime = '09:00',
   endTime = '21:00',
   interval = 30,
@@ -130,13 +130,13 @@ const TimeTable = ({
       <div className="inline-block border border-gray-200 rounded-lg overflow-hidden">
         {/* Header row with days */}
         <div className="flex bg-gray-50">
-          <div className="w-20 h-10 flex items-center justify-center border-b border-r border-gray-200 font-semibold text-sm">
+          <div className="w-10 h-9 flex items-center justify-center border-b border-r border-gray-200 font-semibold text-sm">
             Time
           </div>
           {days.map((day) => (
             <div
               key={day}
-              className="w-16 h-10 flex items-center justify-center border-b border-r last:border-r-0 border-gray-200 font-semibold text-sm"
+              className="w-10 h-9 flex items-center justify-center border-b border-r last:border-r-0 border-gray-200 font-semibold text-sm"
             >
               {day}
             </div>
@@ -147,7 +147,7 @@ const TimeTable = ({
         {timeSlots.map((time) => (
           <div key={time} className="flex">
             {/* Time label */}
-            <div className="w-20 h-10 flex items-center justify-center border-b border-r border-gray-200 text-xs text-gray-600">
+            <div className="w-10 h-9 flex items-center justify-center border-b border-r border-gray-200 text-xs text-gray-600">
               {time}
             </div>
 
@@ -158,7 +158,7 @@ const TimeTable = ({
                 <div
                   key={`${day}-${time}`}
                   className={cn(
-                    'w-16 h-10 border-b border-r last:border-r-0 border-gray-200 transition-colors',
+                    'w-10 h-9 border-b border-r last:border-r-0 border-gray-200 transition-colors',
                     isSelected ? 'bg-violet-500' : 'bg-white',
                     readOnly ? 'cursor-pointer' : 'cursor-default',
                     !readOnly && !isSelected && 'hover:bg-violet-50',
