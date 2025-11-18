@@ -5,6 +5,7 @@ import { EntryUser } from './pages/EntryUser';
 import { EntryTimetable } from './pages/EntryTimetable';
 import { EntryRank } from './pages/EntryRank';
 import { EntryComplete } from './pages/EntryComplete';
+import TimetableView from '@/pages/TimetableTest.tsx';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="rank" element={<EntryRank />} />
           <Route path="complete" element={<EntryComplete />} />
         </Route>
+        <Route path="/timetable" element={<TimetableView />} />
       </Routes>
     </>
   );
