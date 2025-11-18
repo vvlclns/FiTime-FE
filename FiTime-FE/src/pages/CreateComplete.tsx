@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 
-export default function CreateSuccess() {
+export default function CreateComplete() {
   const location = useLocation();
   const link = location.state?.link || null;
 
