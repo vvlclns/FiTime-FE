@@ -41,8 +41,8 @@ export const timespanToSlots = (
   interval: number,
 ): TimeSlot[] => {
   return slots.flatMap((slot) => {
-    let startTime = parseTimeToMinutes(slot.startTime);
-    let endTime = parseTimeToMinutes(slot.endTime);
+    const startTime = parseTimeToMinutes(slot.startTime);
+    const endTime = parseTimeToMinutes(slot.endTime);
     const resultSlots: TimeSlot[] = [];
     for (
       let currentTime = startTime;
