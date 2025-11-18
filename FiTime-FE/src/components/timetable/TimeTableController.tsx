@@ -5,14 +5,15 @@ import {
   type TimeTableProps,
 } from '@/components/timetable/TimeTable.tsx';
 import {
-  slotsToJson,
-  type TimeTableJson,
+  mergeSlots,
+  type TimespanSlots,
+  timespanToSlots,
 } from '@/components/timetable/util.ts';
 
 interface TimeTableControllerProps
   extends Omit<TimeTableProps, 'selectedSlots' | 'onSelectionChange'> {
-  initialData?: TimeTableJson;
-  onChange?: (data: TimeTableJson) => void;
+  initialData?: TimespanSlots[];
+  onChange?: (data: TimespanSlots[]) => void;
 }
 
 export const TimeTableController = ({
@@ -21,14 +22,14 @@ export const TimeTableController = ({
   interval = 60,
   ...props
 }: TimeTableControllerProps) => {
-  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
+  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(
+    initialData ? timespanToSlots(initialData, interval) : [],
+  );
 
   const handleChange = (slots: TimeSlot[]) => {
     setSelectedSlots(slots);
-    const json = slotsToJson(selectedSlots, interval);
-    if (onChange) {
-      onChange(json);
-    }
+    const timespanSlots = mergeSlots(slots, interval);
+    onChange?.(timespanSlots);
   };
 
   return (
