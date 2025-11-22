@@ -1,27 +1,34 @@
 import { create } from 'zustand';
+import type { TimespanSlots } from '@/components/timetable/util.ts';
 
 type EntryStore = {
   username?: string;
   password?: string;
-  timetable?: unknown;
-  rank?: unknown;
+  timetable?: TimespanSlots[];
 
   setUserData: (data: { username: string; password: string }) => void;
-  setTimetableData: (data: { timetable: unknown }) => void;
-  setRankData: (data: { rank: unknown }) => void;
+  setTimetableData: (data: { timetable: TimespanSlots[] }) => void;
   reset: () => void;
 };
 
 const initialState = {
   username: undefined,
   password: undefined,
-  timetable: undefined,
-  rank: undefined,
+  timetable: [],
 };
 
 export const useEntryStore = create<EntryStore>((set) => ({
-  setUserData: (data) => set(data),
-  setTimetableData: (data) => set(data),
-  setRankData: (data) => set(data),
+  ...initialState,
+
+  setUserData: (data) =>
+    set((state) => ({
+      ...state,
+      ...data,
+    })),
+  setTimetableData: (data) =>
+    set((state) => ({
+      ...state,
+      ...data,
+    })),
   reset: () => set(initialState),
 }));
