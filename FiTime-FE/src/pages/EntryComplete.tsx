@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEntryStore } from '@/stores/entryStore';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,11 @@ import { Progress } from '@/components/ui/progress';
 
 export function EntryComplete() {
   const navigate = useNavigate();
+  const reset = useEntryStore((state) => state.reset);
+
+  useEffect(() => {
+    reset();
+  }, [reset]);
 
   return (
     <>
@@ -19,13 +25,6 @@ export function EntryComplete() {
       </div>
 
       <div className="flex w-full px-5 pb-4 pt-15 gap-5">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => navigate('../timetable')}
-        >
-          스케줄 수정하기
-        </Button>
         <Button className="flex-1" onClick={() => navigate('/')}>
           결과 확인하기
         </Button>
