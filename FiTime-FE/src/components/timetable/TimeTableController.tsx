@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   type TimeSlot,
   TimeTable,
@@ -25,6 +25,14 @@ export const TimeTableController = ({
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(
     initialData ? timespanToSlots(initialData, interval) : [],
   );
+
+  // initialData/interval 변경 시 내부 상태 동기화 + 초기 onChange 전파
+  useEffect(() => {
+    if (initialData) {
+      setSelectedSlots(timespanToSlots(initialData, interval));
+      onChange?.(initialData);
+    }
+  }, [initialData, interval, onChange]);
 
   const handleChange = (slots: TimeSlot[]) => {
     setSelectedSlots(slots);
