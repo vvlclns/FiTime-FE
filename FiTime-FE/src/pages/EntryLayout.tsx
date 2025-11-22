@@ -9,24 +9,24 @@ type RoomInfo = {
 
 export function EntryLayout() {
   const navigate = useNavigate();
-  const { room_id } = useParams();
+  const { room_link } = useParams();
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
 
-  // room_id가 바뀔 때 방 정보 API로 불러오기
-  useEffect(() => {
-    const fetchRoomInfo = async () => {
-      if (!room_id) return;
-      try {
-        const { data } = await api.get(`/room/${room_id}`);
-        setRoomInfo(data);
-      } catch (err) {
-        alert('존재하지 않는 방입니다.');
-        navigate('/', { replace: true });
-      }
-    };
+  // room_link가 바뀔 때 방 정보 API로 불러오기
+  // useEffect(() => {
+  //   const fetchRoomInfo = async () => {
+  //     if (!room_link) return;
+  //     try {
+  //       const { data } = await api.get(`/room/${room_link}`);
+  //       setRoomInfo(data);
+  //     } catch (err) {
+  //       alert('존재하지 않는 방입니다.');
+  //       navigate('/', { replace: true });
+  //     }
+  //   };
 
-    fetchRoomInfo();
-  }, [room_id, navigate]);
+  //   fetchRoomInfo();
+  // }, [room_link, navigate]);
 
   // API 연동 전 테스트용 더미 방 정보
   useEffect(() => {
