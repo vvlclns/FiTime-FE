@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { cn, parseTimeToMinutes, formatMinutesToTime } from '@/lib/utils.ts';
 
 export interface TimeSlot {
@@ -7,14 +7,22 @@ export interface TimeSlot {
 }
 
 export interface TimeTableProps {
+  // Grid configuration
   days?: string[];
   startTime?: string;
   endTime?: string;
   interval?: number;
-  selectedSlots?: TimeSlot[];
-  onSelectionChange?: (selected: TimeSlot[]) => void;
+
+  // Display data - use ONE of these:
+  selectedSlots?: TimeSlot[]; // For selection mode
+  heatmapData?: Record<string, number>; // For heatmap mode: "day-time" -> priority
+
+  // Interaction callbacks (optional, for interactive mode)
+  onCellMouseDown?: (day: string, time: string) => void;
+  onCellMouseEnter?: (day: string, time: string) => void;
+  onCellMouseUp?: () => void;
+
   className?: string;
-  readOnly?: boolean;
 }
 
 const TimeTable = ({
@@ -22,15 +30,13 @@ const TimeTable = ({
   startTime = '09:00',
   endTime = '21:00',
   interval = 30,
-  selectedSlots: externalSelectedSlots = [],
-  onSelectionChange,
+  selectedSlots = [],
+  heatmapData,
+  onCellMouseDown,
+  onCellMouseEnter,
+  onCellMouseUp,
   className,
-  readOnly = false,
 }: TimeTableProps) => {
-  const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set());
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragMode, setDragMode] = useState<'select' | 'deselect'>('select');
-
   // Generate time slots
   const timeSlots = useMemo(() => {
     const slots: string[] = [];
@@ -49,83 +55,66 @@ const TimeTable = ({
   // Create slot key
   const getSlotKey = (day: string, time: string) => `${day}-${time}`;
 
-  useEffect(() => {
-    const updatedSlot = new Set(
-      externalSelectedSlots?.map((slot) => getSlotKey(slot.day, slot.time)),
-    );
-    setSelectedSlots(updatedSlot);
-  }, [externalSelectedSlots]);
+  // Convert selectedSlots array to Set for O(1) lookup
+  const selectedSlotsSet = useMemo(
+    () => new Set(selectedSlots.map((slot) => getSlotKey(slot.day, slot.time))),
+    [selectedSlots],
+  );
 
   // Check if slot is selected
   const isSlotSelected = (day: string, time: string) => {
-    return selectedSlots.has(getSlotKey(day, time));
+    return selectedSlotsSet.has(getSlotKey(day, time));
   };
 
-  const notifySelection = (newSelection: Set<string>) => {
-    setSelectedSlots(newSelection);
-    if (onSelectionChange) {
-      const slotsArray = Array.from(newSelection).map((t) => {
-        const [day, time] = t.split('-');
-        return { day, time };
-      });
-      onSelectionChange(slotsArray);
-    }
+  // Get heatmap priority for a slot
+  const getHeatmapPriority = (day: string, time: string): number | null => {
+    if (!heatmapData) return null;
+    return heatmapData[getSlotKey(day, time)] ?? null;
   };
 
-  // Toggle slot selection
-  const toggleSlot = useCallback(
-    (day: string, time: string) => {
-      const key = getSlotKey(day, time);
-      const newSelected = new Set(selectedSlots);
+  // Get cell styling based on mode
+  const getCellStyle = (day: string, time: string) => {
+    const isInteractive = !!onCellMouseDown;
 
-      if (newSelected.has(key)) {
-        newSelected.delete(key);
-      } else {
-        newSelected.add(key);
+    // Heatmap mode (Not interactive)
+    if (heatmapData) {
+      const priority = getHeatmapPriority(day, time);
+      if (priority === null) {
+        return 'bg-white';
       }
 
-      notifySelection(newSelected);
-    },
-    [selectedSlots, onSelectionChange],
-  );
+      // Color based on priority (1 = highest priority)
+      const heatmapColors = [
+        'bg-violet-700', // priority 1
+        'bg-violet-500', // priority 2
+        'bg-violet-300', // priority 3
+        'bg-violet-100', // priority 4+
+      ];
 
-  // Handle mouse down - start dragging
-  const handleMouseDown = (day: string, time: string) => {
-    if (readOnly) return;
+      // Find color index of matching priority
+      const colorIndex = Math.min(priority - 1, heatmapColors.length - 1);
+      return heatmapColors[colorIndex];
+    }
+
+    // Selection mode (On/Off)
     const isSelected = isSlotSelected(day, time);
-    setDragMode(isSelected ? 'deselect' : 'select');
-    setIsDragging(true);
-    toggleSlot(day, time);
+    return cn(
+      isSelected ? 'bg-violet-500' : 'bg-white',
+      isInteractive && !isSelected && 'hover:bg-violet-50',
+      isInteractive && isSelected && 'hover:bg-violet-600',
+    );
   };
 
-  // Handle mouse enter - continue dragging
-  const handleMouseEnter = (day: string, time: string) => {
-    if (readOnly) return;
-    if (isDragging) {
-      const key = getSlotKey(day, time);
-      const newSelected = new Set(selectedSlots);
-
-      if (dragMode === 'select' && !newSelected.has(key)) {
-        newSelected.add(key);
-        notifySelection(newSelected);
-      } else if (dragMode === 'deselect' && newSelected.has(key)) {
-        newSelected.delete(key);
-        notifySelection(newSelected);
-      }
-    }
-  };
-
-  // Handle mouse up - stop dragging
-  const handleMouseUp = () => {
-    if (readOnly) return;
-    setIsDragging(false);
+  // Get cursor style
+  const getCursorStyle = () => {
+    return onCellMouseDown ? 'cursor-pointer' : 'cursor-default';
   };
 
   return (
     <div
       className={cn('select-none', className)}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      onMouseUp={onCellMouseUp}
+      onMouseLeave={onCellMouseUp}
     >
       <div className="inline-block border border-gray-200 rounded-lg overflow-hidden">
         {/* Header row with days */}
@@ -152,23 +141,18 @@ const TimeTable = ({
             </div>
 
             {/* Day cells */}
-            {days.map((day) => {
-              const isSelected = isSlotSelected(day, time);
-              return (
-                <div
-                  key={`${day}-${time}`}
-                  className={cn(
-                    'w-10 h-9 border-b border-r last:border-r-0 border-gray-200 transition-colors',
-                    isSelected ? 'bg-violet-500' : 'bg-white',
-                    readOnly ? 'cursor-pointer' : 'cursor-default',
-                    !readOnly && !isSelected && 'hover:bg-violet-50',
-                    !readOnly && isSelected && 'hover:bg-violet-600',
-                  )}
-                  onMouseDown={() => handleMouseDown(day, time)}
-                  onMouseEnter={() => handleMouseEnter(day, time)}
-                />
-              );
-            })}
+            {days.map((day) => (
+              <div
+                key={`${day}-${time}`}
+                className={cn(
+                  'w-10 h-9 border-b border-r last:border-r-0 border-gray-200 transition-colors',
+                  getCellStyle(day, time),
+                  getCursorStyle(),
+                )}
+                onMouseDown={() => onCellMouseDown?.(day, time)}
+                onMouseEnter={() => onCellMouseEnter?.(day, time)}
+              />
+            ))}
           </div>
         ))}
       </div>
