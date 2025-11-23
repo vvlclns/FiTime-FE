@@ -1,5 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEntryStore } from '@/stores/entryStore';
+import { api } from '@/lib/axios';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,10 +33,12 @@ type EntryUserFormValues = z.infer<typeof EntryUserSchema>;
 
 export function EntryUser() {
   const navigate = useNavigate();
+  const { room_link } = useParams();
 
   const defaultUsername = useEntryStore((state) => state.username);
   const defaultPassword = useEntryStore((state) => state.password);
   const setUserData = useEntryStore((state) => state.setUserData);
+  const setUser_id = useEntryStore((state) => state.setUser_id);
 
   const form = useForm<EntryUserFormValues>({
     resolver: zodResolver(EntryUserSchema),
@@ -45,14 +48,42 @@ export function EntryUser() {
     },
   });
 
-  function onSubmit(values: EntryUserFormValues) {
+  const onSubmit = async (values: EntryUserFormValues) => {
     setUserData({
       username: values.username,
       password: values.password,
     });
 
-    navigate('timetable');
-  }
+    // 유저 등록/접속
+    try {
+      const { data } = await api.post<{
+        status: string;
+        message: string;
+        user_id: string;
+      }>('/user/login', {
+        username: values.username,
+        password: values.password,
+        room_id: room_link,
+      });
+
+      if (data.user_id === '-1') {
+        alert('잘못된 사용자 정보입니다.');
+        return;
+      }
+
+      setUser_id({ user_id: data.user_id });
+      navigate('timetable', { replace: true });
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        alert('비밀번호가 올바르지 않습니다.');
+      } else if (err.response?.status === 404) {
+        alert('해당 방이 존재하지 않습니다.');
+        navigate('/', { replace: true });
+      } else {
+        alert('유저 등록/접속 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    }
+  };
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useEntryStore } from '@/stores/entryStore';
 import { api } from '@/lib/axios';
@@ -17,10 +17,8 @@ import { buildRankMatrix } from '@/components/timetable/rankMatrix';
 
 export function EntryRank() {
   const navigate = useNavigate();
-  const { room_link } = useParams();
 
-  const username = useEntryStore((state) => state.username);
-  const password = useEntryStore((state) => state.password);
+  const user_id = useEntryStore((state) => state.user_id);
   const timetableResult = useEntryStore((state) => state.timetable);
 
   type Option = { key: string; label: string };
@@ -72,27 +70,12 @@ export function EntryRank() {
   };
 
   const onSubmit = async () => {
-    let user_id: number | undefined;
     const ranks = {
       rank1: parseKey(rank1),
       rank2: parseKey(rank2),
       rank3: parseKey(rank3),
     };
     const availability = buildRankMatrix(timetableResult ?? [], ranks);
-
-    // 유저 등록/접속
-    try {
-      const { data } = await api.post<{
-        status: string;
-        message: string;
-        user_id: number;
-      }>('/user/login', { username, password, room_link });
-
-      user_id = data.user_id;
-    } catch (err) {
-      alert('유저 등록/접속 중 오류가 발생했습니다. 다시 시도해주세요.');
-      return;
-    }
 
     // 유저 일정 등록
     try {
