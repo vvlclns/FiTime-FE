@@ -4,6 +4,7 @@ import { useEntryStore } from '@/stores/entryStore';
 import { TimeTableController } from '@/components/timetable';
 import { matrixToTimespans } from '@/components/timetable/util.ts';
 import type { TimespanSlots } from '@/components/timetable/util.ts';
+import { matrixToRankSlots } from '@/components/timetable/rankMatrix';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { api } from '@/lib/axios';
@@ -14,6 +15,7 @@ export function EntryTimetable() {
   const user_id = useEntryStore((state) => state.user_id);
   const defaultTimetable = useEntryStore((state) => state.timetable);
   const setTimetableData = useEntryStore((state) => state.setTimetableData);
+  const setRankData = useEntryStore((state) => state.setRankData);
 
   const [slotSpans, setSlotSpans] = useState<TimespanSlots[] | undefined>(
     defaultTimetable,
@@ -70,10 +72,13 @@ export function EntryTimetable() {
   //         ],
   //       ];
 
-  //       // availability -> TimespanSlots[] 변환
+  //       // availability -> TimespanSlots[] 변환 + 순위 적용
   //       const parsed: TimespanSlots[] = matrixToTimespans(availability);
+  //       const rankSlots = matrixToRankSlots(availability);
+
   //       setTimetableData({ timetable: parsed });
   //       setSlotSpans(parsed);
+  //       setRankData(rankSlots);
   //     } catch (err) {
   //       return;
   //     }
@@ -97,10 +102,13 @@ export function EntryTimetable() {
           availability: number[][];
         }>(`/user/time/${user_id}`);
 
-        // availability -> TimespanSlots[] 변환
+        // availability -> TimespanSlots[] 변환 + 순위 적용
         const parsed: TimespanSlots[] = matrixToTimespans(data.availability);
+        const rankSlots = matrixToRankSlots(data.availability);
+
         setTimetableData({ timetable: parsed });
         setSlotSpans(parsed);
+        setRankData(rankSlots);
       } catch (err) {
         return;
       }

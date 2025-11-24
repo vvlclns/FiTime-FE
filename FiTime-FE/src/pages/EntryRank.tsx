@@ -20,12 +20,25 @@ export function EntryRank() {
 
   const user_id = useEntryStore((state) => state.user_id);
   const timetableResult = useEntryStore((state) => state.timetable);
+  const rankStore1 = useEntryStore((state) => state.rank1);
+  const rankStore2 = useEntryStore((state) => state.rank2);
+  const rankStore3 = useEntryStore((state) => state.rank3);
+  const setRankData = useEntryStore((state) => state.setRankData);
 
+  const DAY_ORDER = ['월', '화', '수', '목', '금', '토', '일'];
   type Option = { key: string; label: string };
+  const buildKey = (s: TimespanSlots) => `${s.day}|${s.startTime}|${s.endTime}`;
 
-  const [rank1, setRank1] = useState<string>('');
-  const [rank2, setRank2] = useState<string>('');
-  const [rank3, setRank3] = useState<string>('');
+  // 최초 렌더 시 rankStore 값이 있으면 그 값으로 초기화, 없으면 빈 문자열
+  const [rank1, setRank1] = useState<string>(() =>
+    rankStore1 ? buildKey(rankStore1) : '',
+  );
+  const [rank2, setRank2] = useState<string>(() =>
+    rankStore2 ? buildKey(rankStore2) : '',
+  );
+  const [rank3, setRank3] = useState<string>(() =>
+    rankStore3 ? buildKey(rankStore3) : '',
+  );
 
   useEffect(() => {
     if (!timetableResult || timetableResult.length === 0) {
@@ -36,19 +49,20 @@ export function EntryRank() {
     }
   }, [timetableResult, navigate]);
 
-  const DAY_ORDER = ['월', '화', '수', '목', '금', '토', '일'];
   const dayIndex = (d: string) => {
     const i = DAY_ORDER.indexOf(d);
     return i === -1 ? 7 : i; // 알 수 없는 요일은 뒤로
   };
+
   const toMinutes = (hhmm: string) => {
     const [h, m] = hhmm.split(':').map(Number);
     return h * 60 + m;
   };
 
   // 정렬 + 옵션 변환
-  const timeOptions = (): Option[] => {
+  const options: Option[] = (() => {
     const list = timetableResult ?? [];
+
     const sorted = [...list].sort((a, b) => {
       const d = dayIndex(a.day) - dayIndex(b.day);
       if (d !== 0) return d;
@@ -56,11 +70,33 @@ export function EntryRank() {
       if (s !== 0) return s;
       return toMinutes(a.endTime) - toMinutes(b.endTime);
     });
-    return sorted.map(({ day, startTime, endTime }) => ({
-      key: `${day}|${startTime}|${endTime}`,
-      label: `${day} ${startTime}~${endTime}`,
+
+    return sorted.map((t) => ({
+      key: buildKey(t),
+      label: `${t.day} ${t.startTime}~${t.endTime}`,
     }));
-  };
+  })();
+
+  // options(timetableResult) 변경 시 현재 선택값이 목록에 없으면 초기화
+  useEffect(() => {
+    const keys = new Set(options.map((o) => o.key));
+
+    if (rank1 && !keys.has(rank1)) setRank1('');
+    if (rank2 && !keys.has(rank2)) setRank2('');
+    if (rank3 && !keys.has(rank3)) setRank3('');
+
+    // 순차 제약 (앞순위가 초기화되면 뒷순위도 함께 초기화)
+    if (!rank1 && rank2) setRank2('');
+    if (!rank2 && rank3) setRank3('');
+  }, [options]);
+
+  useEffect(() => {
+    if (!user_id) return;
+
+    if (rankStore1 && !rank1) setRank1(buildKey(rankStore1));
+    if (rankStore2 && !rank2) setRank2(buildKey(rankStore2));
+    if (rankStore3 && !rank3) setRank3(buildKey(rankStore3));
+  }, [user_id, rankStore1, rankStore2, rankStore3]);
 
   const parseKey = (k: string): TimespanSlots | undefined => {
     if (!k) return;
@@ -75,6 +111,7 @@ export function EntryRank() {
       rank2: parseKey(rank2),
       rank3: parseKey(rank3),
     };
+    setRankData(ranks);
     const availability = buildRankMatrix(timetableResult ?? [], ranks);
 
     // 유저 일정 등록
@@ -83,14 +120,11 @@ export function EntryRank() {
         user_id,
         availability,
       });
-
       navigate('../complete', { replace: true });
     } catch (err) {
       alert('일정 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
-
-  const options = timeOptions();
 
   return (
     <>

@@ -2,6 +2,16 @@ import type { TimespanSlots } from '@/components/timetable/util.ts';
 
 const DAY_ORDER = ['월', '화', '수', '목', '금', '토', '일'];
 
+export type RankSlots = {
+  rank1?: TimespanSlots;
+  rank2?: TimespanSlots;
+  rank3?: TimespanSlots;
+};
+
+function hourToHHMM(h: number) {
+  return `${String(h).padStart(2, '0')}:00`;
+}
+
 function hhmmToHour(hhmm: string) {
   const [h] = hhmm.split(':').map(Number);
   return h;
@@ -14,12 +24,6 @@ function hourRange(start: string, end: string) {
   for (let h = s; h < e; h++) arr.push(h);
   return arr;
 }
-
-export type RankSlots = {
-  rank1?: TimespanSlots;
-  rank2?: TimespanSlots;
-  rank3?: TimespanSlots;
-};
 
 export function buildRankMatrix(
   allSlots: TimespanSlots[],
@@ -58,4 +62,42 @@ export function buildRankMatrix(
   });
 
   return m;
+}
+
+function extractRankSegment(
+  matrix: number[][],
+  rank: number,
+): TimespanSlots | undefined {
+  for (let d = 0; d < 7; d++) {
+    const row = matrix[d];
+    let start: number | null = null;
+
+    for (let h = 0; h <= 24; h++) {
+      const val = h < 24 ? row[h] : 0;
+      const isTarget = val === rank;
+
+      if (isTarget && start === null) start = h;
+
+      if ((!isTarget || h === 24) && start !== null) {
+        if (h > start) {
+          return {
+            day: DAY_ORDER[d],
+            startTime: hourToHHMM(start),
+            endTime: hourToHHMM(h),
+          };
+        }
+        start = null;
+      }
+    }
+  }
+  return undefined;
+}
+
+export function matrixToRankSlots(matrix: number[][]): RankSlots {
+  if (!Array.isArray(matrix) || matrix.length !== 7) return {};
+  return {
+    rank1: extractRankSegment(matrix, 1),
+    rank2: extractRankSegment(matrix, 2),
+    rank3: extractRankSegment(matrix, 3),
+  };
 }

@@ -6,10 +6,18 @@ type EntryStore = {
   password?: string;
   user_id?: string;
   timetable?: TimespanSlots[];
+  rank1?: TimespanSlots;
+  rank2?: TimespanSlots;
+  rank3?: TimespanSlots;
 
   setUserData: (data: { username: string; password: string }) => void;
   setUser_id: (data: { user_id: string }) => void;
   setTimetableData: (data: { timetable: TimespanSlots[] }) => void;
+  setRankData: (rank: {
+    rank1?: TimespanSlots;
+    rank2?: TimespanSlots;
+    rank3?: TimespanSlots;
+  }) => void;
   reset: () => void;
 };
 
@@ -18,6 +26,9 @@ const initialState = {
   password: undefined,
   user_id: undefined,
   timetable: [],
+  rank1: undefined,
+  rank2: undefined,
+  rank3: undefined,
 };
 
 export const useEntryStore = create<EntryStore>((set) => ({
@@ -34,6 +45,11 @@ export const useEntryStore = create<EntryStore>((set) => ({
       ...data,
     })),
   setTimetableData: (data) =>
+    set((state) => ({
+      ...state,
+      ...data,
+    })),
+  setRankData: (data) =>
     set((state) => ({
       ...state,
       ...data,

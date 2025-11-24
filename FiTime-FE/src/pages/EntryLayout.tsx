@@ -13,25 +13,25 @@ export function EntryLayout() {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
 
   // room_link가 바뀔 때 방 정보 API로 불러오기
-  // useEffect(() => {
-  //   const fetchRoomInfo = async () => {
-  //     if (!room_link) return;
-  //     try {
-  //       const { data } = await api.get(`/room/${room_link}`);
-  //       setRoomInfo(data);
-  //     } catch (err) {
-  //       alert('존재하지 않는 방입니다.');
-  //       navigate('/', { replace: true });
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchRoomInfo = async () => {
+      if (!room_link) return;
+      try {
+        const { data } = await api.get(`/room/${room_link}`);
+        setRoomInfo(data);
+      } catch (err) {
+        alert('존재하지 않는 방입니다.');
+        navigate('/', { replace: true });
+      }
+    };
 
-  //   fetchRoomInfo();
-  // }, [room_link, navigate]);
+    fetchRoomInfo();
+  }, [room_link, navigate]);
 
   // API 연동 전 테스트용 더미 방 정보
-  useEffect(() => {
-    setRoomInfo({ title: '방 제목', descriptions: '방 설명' });
-  }, []);
+  // useEffect(() => {
+  //   setRoomInfo({ title: '방 제목', descriptions: '방 설명' });
+  // }, []);
 
   if (!roomInfo) {
     return (
