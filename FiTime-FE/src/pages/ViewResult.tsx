@@ -8,16 +8,31 @@ import type { SolutionResponse, HeatmapResponse } from '@/types/api.ts';
 import { api } from '@/lib/axios';
 import mockHeatmapData from '@/mocks/heatmapData.json';
 import mockSolutionData from '@/mocks/solutionData.json';
+import { useEntryStore } from '@/stores/entryStore.ts';
+import { useOutletContext } from 'react-router-dom';
 
 export default function ViewResult() {
   const navigate = useNavigate();
 
-  const { room_link } = useParams();
+  type OutletContext = {
+    roomInfo: {
+      title: string;
+      descriptions?: string;
+    };
+  };
 
+  const { room_link } = useParams();
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>();
   const [solutionResponse, setSolutionResponse] = useState<SolutionResponse>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const reset = useEntryStore((state) => state.reset);
+  const { roomInfo } = useOutletContext<OutletContext>();
+
+  useEffect(() => {
+    reset();
+  }, [reset]);
 
   const USE_MOCK = false;
 
@@ -123,8 +138,10 @@ export default function ViewResult() {
             <div className="flex justify-between content-center pt-4">
               {/* 제목 섹션 */}
               <div className="flex flex-col top-[80px] mx-auto w-[375px] gap-y-1.5 text-left">
-                <div className="text-lg/[20px] font-bold">약속 제목</div>
-                <div className="text-sm/[20px] text-gray-500">약속 설명</div>
+                <div className="text-lg/[20px] font-bold">{roomInfo.title}</div>
+                <div className="text-sm/[20px] text-gray-500">
+                  {roomInfo.descriptions}
+                </div>
               </div>
               {/* 방 나가기 버튼*/}
               <Button
@@ -168,7 +185,7 @@ export default function ViewResult() {
               variant={'outline'}
               className="flex-1"
               onClick={() => {
-                navigate(`/room/${room_link}/timetable`);
+                navigate(`../timetable`);
               }}
             >
               스케줄 수정하기

@@ -25,9 +25,8 @@ export default function App() {
           <Route path="timetable" element={<EntryTimetable />} />
           <Route path="rank" element={<EntryRank />} />
           <Route path="complete" element={<EntryComplete />} />
+          <Route path="result" element={<ViewResult />} />
         </Route>
-
-        <Route path="/room/:room_link/result" element={<ViewResult />} />
       </Routes>
     </>
   );

@@ -49,7 +49,7 @@ export function EntryLayout() {
     <div className="w-full min-h-screen bg-gray-100">
       <div className="w-[375px] mx-auto bg-white min-h-screen">
         <main>
-          <Outlet />
+          <Outlet context={roomInfo} />
         </main>
       </div>
     </div>
