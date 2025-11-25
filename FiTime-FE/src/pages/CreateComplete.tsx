@@ -45,8 +45,8 @@ export default function CreateComplete() {
             className="w-full"
             onClick={() => {
               if (!link) return;
-
-              navigator.clipboard.writeText(link);
+              const roomUrl = `${window.location.origin}/room/${link}`;
+              navigator.clipboard.writeText(roomUrl);
               alert('링크가 복사되었습니다.');
             }}
           >
