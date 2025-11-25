@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEntryStore } from '@/stores/entryStore';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 export function EntryComplete() {
   const navigate = useNavigate();
+  const { room_link } = useParams();
   const reset = useEntryStore((state) => state.reset);
 
   useEffect(() => {
@@ -25,7 +26,10 @@ export function EntryComplete() {
       </div>
 
       <div className="flex w-full px-5 pb-4 pt-15 gap-5">
-        <Button className="flex-1" onClick={() => navigate('/')}>
+        <Button
+          className="flex-1"
+          onClick={() => navigate(`/room/${room_link}/result`)}
+        >
           결과 확인하기
         </Button>
       </div>
