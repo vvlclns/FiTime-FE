@@ -95,3 +95,46 @@ export const mergeSlots = (
   });
   return result;
 };
+
+// availability (7*24 number[][]) -> TimespanSlots[]
+// 0 = 미선택된 슬롯, 1~4 = 선택된 슬롯 (순위는 여기서 반영하지 않음)
+export function matrixToTimespans(
+  matrix: number[][],
+  interval: number = 60,
+): TimespanSlots[] {
+  const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+  const result: TimespanSlots[] = [];
+
+  if (!Array.isArray(matrix) || matrix.length !== 7) return result;
+
+  matrix.forEach((row, dayIdx) => {
+    if (!Array.isArray(row)) return;
+    let start: number | null = null;
+
+    for (let h = 0; h <= 24; h++) {
+      const val = h < 24 ? row[h] : 0;
+      const selected = val > 0;
+      if (selected && start === null) start = h;
+      if ((!selected || h === 24) && start !== null) {
+        if (h > start) {
+          const toHHMM = (hourIndex: number) => {
+            const totalMinutes = hourIndex * 60;
+            const hh = Math.floor(totalMinutes / 60)
+              .toString()
+              .padStart(2, '0');
+            const mm = (totalMinutes % 60).toString().padStart(2, '0');
+            return `${hh}:${mm}`;
+          };
+          result.push({
+            day: dayLabels[dayIdx],
+            startTime: toHHMM(start),
+            endTime: toHHMM(h),
+          });
+        }
+        start = null;
+      }
+    }
+  });
+
+  return result;
+}
