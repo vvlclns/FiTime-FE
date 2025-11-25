@@ -19,7 +19,7 @@ export default function ViewResult() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const USE_MOCK = true;
+  const USE_MOCK = false;
 
   // Fetch all data (heatmap + solution)
   useEffect(() => {
@@ -168,7 +168,7 @@ export default function ViewResult() {
               variant={'outline'}
               className="flex-1"
               onClick={() => {
-                navigate('../timetable');
+                navigate(`/room/${room_link}/timetable`);
               }}
             >
               스케줄 수정하기
