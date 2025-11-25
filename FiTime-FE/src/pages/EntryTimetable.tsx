@@ -102,13 +102,16 @@ export function EntryTimetable() {
           availability: number[][];
         }>(`/user/time/${user_id}`);
 
-        // availability -> TimespanSlots[] 변환 + 순위 적용
-        const parsed: TimespanSlots[] = matrixToTimespans(data.availability);
-        const rankSlots = matrixToRankSlots(data.availability);
+        if (data.availability.length === 0) return;
+        else {
+          // availability -> TimespanSlots[] 변환 + 순위 적용
+          const parsed: TimespanSlots[] = matrixToTimespans(data.availability);
+          const rankSlots = matrixToRankSlots(data.availability);
 
-        setTimetableData({ timetable: parsed });
-        setSlotSpans(parsed);
-        setRankData(rankSlots);
+          setTimetableData({ timetable: parsed });
+          setSlotSpans(parsed);
+          setRankData(rankSlots);
+        }
       } catch (err) {
         return;
       }
