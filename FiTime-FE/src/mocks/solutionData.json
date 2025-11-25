@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "message": "Solution retrieved successfully",
+  "solutions": [
+    {
+      "day": 1,
+      "start_hour": 14,
+      "end_hour": 16,
+      "rank": 1,
+      "unavailableUsers": []
+    },
+    {
+      "day": 2,
+      "start_hour": 10,
+      "end_hour": 12,
+      "rank": 2,
+      "unavailableUsers": [
+        {
+          "username": "지우"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "start_hour": 18,
+      "end_hour": 20,
+      "rank": 3,
+      "unavailableUsers": [
+        {
+          "username": "영민"
+        },
+        {
+          "username": "철수"
+        }
+      ]
+    }
+  ]
+}
