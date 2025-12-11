@@ -111,14 +111,16 @@ export function matrixToTimespans(
     if (!Array.isArray(row)) return;
     let start: number | null = null;
 
-    for (let h = 0; h <= 24; h++) {
-      const val = h < 24 ? row[h] : 0;
+    for (let h = 0; h <= row.length; h++) {
+      const val = h < row.length ? row[h] : 0;
       const selected = val > 0;
+
       if (selected && start === null) start = h;
-      if ((!selected || h === 24) && start !== null) {
+
+      if ((!selected || h === row.length) && start !== null) {
         if (h > start) {
           const toHHMM = (hourIndex: number) => {
-            const totalMinutes = hourIndex * 60;
+            const totalMinutes = hourIndex * interval;
             const hh = Math.floor(totalMinutes / 60)
               .toString()
               .padStart(2, '0');
