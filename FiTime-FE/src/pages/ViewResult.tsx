@@ -8,17 +8,14 @@ import type { SolutionResponse, HeatmapResponse } from '@/types/api.ts';
 import { api } from '@/lib/axios';
 import mockHeatmapData from '@/mocks/heatmapData.json';
 import mockSolutionData from '@/mocks/solutionData.json';
-import { useEntryStore } from '@/stores/entryStore.ts';
 import { useOutletContext } from 'react-router-dom';
 
 export default function ViewResult() {
   const navigate = useNavigate();
 
   type OutletContext = {
-    roomInfo: {
-      title: string;
-      descriptions?: string;
-    };
+    title: string;
+    descriptions?: string;
   };
 
   const { room_link } = useParams();
@@ -26,13 +23,7 @@ export default function ViewResult() {
   const [solutionResponse, setSolutionResponse] = useState<SolutionResponse>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const reset = useEntryStore((state) => state.reset);
-  const { roomInfo } = useOutletContext<OutletContext>();
-
-  useEffect(() => {
-    reset();
-  }, [reset]);
+  const roomInfo = useOutletContext<OutletContext>();
 
   const USE_MOCK = false;
 
