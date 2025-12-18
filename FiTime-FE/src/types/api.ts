@@ -1,7 +1,7 @@
 export interface SolutionResponse {
   status: string;
   message: string;
-  solutions: SolutionEntry[];
+  solution: SolutionEntry[];
 }
 
 export interface SolutionEntry {
@@ -9,7 +9,7 @@ export interface SolutionEntry {
   start_hour: number;
   end_hour: number;
   rank: number;
-  unavailableUsers: SolutionUserEntry[];
+  unavailable_users: SolutionUserEntry[];
 }
 
 export interface SolutionUserEntry {

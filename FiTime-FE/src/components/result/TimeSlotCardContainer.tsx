@@ -31,8 +31,8 @@ export function TimeSlotCardContainer({ results = [] }: TimeSlotCardProps) {
             </div>
             {/* 불가능한 유저 */}
             <div className={'text-gray-500 text-sm/[20px]'}>
-              {it.unavailableUsers.length > 0
-                ? joinUserNames(it.unavailableUsers)
+              {it.unavailable_users.length > 0
+                ? joinUserNames(it.unavailable_users)
                 : '모두 참석 가능!'}
             </div>
           </div>

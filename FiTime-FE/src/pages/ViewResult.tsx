@@ -8,6 +8,7 @@ import type { SolutionResponse, HeatmapResponse } from '@/types/api.ts';
 import { api } from '@/lib/axios';
 import mockHeatmapData from '@/mocks/heatmapData.json';
 import mockSolutionData from '@/mocks/solutionData.json';
+import { mergeSolutionTimeSlots } from '@/lib/solutionUtils';
 
 type RoomInfo = {
   title: string;
@@ -20,9 +21,11 @@ export default function ViewResult() {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>();
   const [solutionResponse, setSolutionResponse] = useState<SolutionResponse>();
+  const [numUsers, setNumUsers] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const USE_MOCK = false;
+  const TOP_N_RESULTS = 3;
 
   // room_link가 바뀔 때 방 정보 API로 불러오기
   useEffect(() => {
@@ -58,11 +61,12 @@ export default function ViewResult() {
           );
           setHeatmapData(transformedData);
           setSolutionResponse(solutionMock);
+          setNumUsers(heatmapMock.num_users);
         } else {
           // Fetch from real API
-          const [heatmapRes, solutionRes] = await Promise.all([
-            api.get<HeatmapResponse>(`/room/heatmap/${room_link}`),
+          const [solutionRes, heatmapRes] = await Promise.all([
             api.get<SolutionResponse>(`/room/solution/${room_link}`),
+            api.get<HeatmapResponse>(`/room/heatmap/${room_link}`),
           ]);
 
           const transformedData = transformHeatmapData(
@@ -70,6 +74,7 @@ export default function ViewResult() {
           );
           setHeatmapData(transformedData);
           setSolutionResponse(solutionRes.data);
+          setNumUsers(heatmapRes.data.num_users);
         }
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -99,6 +104,39 @@ export default function ViewResult() {
     });
 
     return heatmap;
+  };
+
+  const shareFeature = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = roomInfo?.title || '일정 조율 결과';
+    const shareText = `${shareTitle} - FiTime에서 확인하세요!`;
+
+    try {
+      // Use Web Share API if available (mobile devices)
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert('링크가 복사되었습니다!');
+      }
+    } catch (err) {
+      // User cancelled the share or error occurred
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('Share failed:', err);
+        // Try clipboard as final fallback
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('링크가 복사되었습니다!');
+        } catch {
+          alert('공유에 실패했습니다. 링크를 복사해주세요.');
+        }
+      }
+    }
   };
 
   // Loading state
@@ -162,7 +200,10 @@ export default function ViewResult() {
               {/* Cards */}
               <div className="flex flex-col">
                 <TimeSlotCardContainer
-                  results={solutionResponse?.solutions || []}
+                  results={mergeSolutionTimeSlots(
+                    solutionResponse?.solution || [],
+                    numUsers,
+                  ).slice(0, TOP_N_RESULTS)}
                 />
               </div>
             </div>
@@ -189,12 +230,7 @@ export default function ViewResult() {
             >
               스케줄 수정하기
             </Button>
-            <Button
-              className="flex-1"
-              onClick={() => {
-                alert('기능 구현 예정');
-              }}
-            >
+            <Button className="flex-1" onClick={shareFeature}>
               결과 공유하기
             </Button>
           </div>
