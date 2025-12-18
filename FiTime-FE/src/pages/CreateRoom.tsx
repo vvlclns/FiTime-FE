@@ -44,7 +44,7 @@ export default function CreateRoom() {
   const onSubmit = async (values: CreateRoomFormValues) => {
     try {
       const { data } = await api.post<{ link: string }>('/room/create', values);
-      navigate('/create/success', {
+      navigate('/create/complete', {
         state: { link: data.link },
       });
     } catch (err) {
