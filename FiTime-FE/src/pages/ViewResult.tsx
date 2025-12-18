@@ -8,24 +8,37 @@ import type { SolutionResponse, HeatmapResponse } from '@/types/api.ts';
 import { api } from '@/lib/axios';
 import mockHeatmapData from '@/mocks/heatmapData.json';
 import mockSolutionData from '@/mocks/solutionData.json';
-import { useOutletContext } from 'react-router-dom';
+
+type RoomInfo = {
+  title: string;
+  descriptions?: string;
+};
 
 export default function ViewResult() {
   const navigate = useNavigate();
-
-  type OutletContext = {
-    title: string;
-    descriptions?: string;
-  };
-
   const { room_link } = useParams();
+  const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>();
   const [solutionResponse, setSolutionResponse] = useState<SolutionResponse>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const roomInfo = useOutletContext<OutletContext>();
-
   const USE_MOCK = false;
+
+  // room_link가 바뀔 때 방 정보 API로 불러오기
+  useEffect(() => {
+    const fetchRoomInfo = async () => {
+      if (!room_link) return;
+      try {
+        const { data } = await api.get(`/room/${room_link}`);
+        setRoomInfo(data);
+      } catch (err) {
+        alert('존재하지 않는 방입니다.');
+        navigate('/', { replace: true });
+      }
+    };
+
+    fetchRoomInfo();
+  }, [room_link, navigate]);
 
   // Fetch all data (heatmap + solution)
   useEffect(() => {
@@ -89,7 +102,7 @@ export default function ViewResult() {
   };
 
   // Loading state
-  if (loading) {
+  if (!roomInfo || loading) {
     return (
       <div className="relative w-full min-h-screen bg-gray-100">
         <div className="w-[375px] mx-auto bg-white min-h-screen">
@@ -129,18 +142,13 @@ export default function ViewResult() {
             <div className="flex justify-between content-center pt-4">
               {/* 제목 섹션 */}
               <div className="flex flex-col top-[80px] mx-auto w-[375px] gap-y-1.5 text-left">
-                <div className="text-lg/[20px] font-bold">{roomInfo.title}</div>
+                <div className="text-lg/[20px] font-bold">
+                  {roomInfo?.title}
+                </div>
                 <div className="text-sm/[20px] text-gray-500">
-                  {roomInfo.descriptions}
+                  {roomInfo?.descriptions}
                 </div>
               </div>
-              {/* 방 나가기 버튼*/}
-              <Button
-                className="bg-gray-100 text-red-600 hover:bg-red-50 hover:text-red-600 "
-                variant={'ghost'}
-              >
-                방 나가기
-              </Button>
             </div>
             {/* 일정 추천 */}
             <div className="flex flex-col gap-y-3">
@@ -176,7 +184,7 @@ export default function ViewResult() {
               variant={'outline'}
               className="flex-1"
               onClick={() => {
-                navigate(`../timetable`);
+                navigate(`/room/${room_link}`);
               }}
             >
               스케줄 수정하기

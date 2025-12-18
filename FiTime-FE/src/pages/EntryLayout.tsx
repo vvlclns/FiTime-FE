@@ -28,11 +28,6 @@ export function EntryLayout() {
     fetchRoomInfo();
   }, [room_link, navigate]);
 
-  // API 연동 전 테스트용 더미 방 정보
-  // useEffect(() => {
-  //   setRoomInfo({ title: '방 제목', descriptions: '방 설명' });
-  // }, []);
-
   if (!roomInfo) {
     return (
       <div className="w-full min-h-screen bg-gray-100">
@@ -49,7 +44,7 @@ export function EntryLayout() {
     <div className="w-full min-h-screen bg-gray-100">
       <div className="w-[375px] mx-auto bg-white min-h-screen">
         <main>
-          <Outlet context={roomInfo} />
+          <Outlet />
         </main>
       </div>
     </div>
