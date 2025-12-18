@@ -12,6 +12,7 @@ import { api } from '@/lib/axios';
 export function EntryTimetable() {
   const navigate = useNavigate();
 
+  const reset = useEntryStore((state) => state.reset);
   const user_id = useEntryStore((state) => state.user_id);
   const defaultTimetable = useEntryStore((state) => state.timetable);
   const setTimetableData = useEntryStore((state) => state.setTimetableData);
@@ -21,74 +22,11 @@ export function EntryTimetable() {
     defaultTimetable,
   );
 
-  // useEffect(() => {
-  //   const fetchTimetable = async () => {
-  //     try {
-  //       // 이미 선택된 슬롯이 있으면 return
-  //       if (slotSpans && slotSpans.length > 0) return;
-  //       if (defaultTimetable && defaultTimetable.length > 0) return;
-
-  //       const availability = [
-  //         // [월요일] Rank 2: 19~21시
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0,
-  //           0,
-  //         ],
-
-  //         // [화요일] 선택된 시간 없음
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  //           0,
-  //         ],
-
-  //         // [수요일] Rank 1: 14~17시
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-  //           0,
-  //         ],
-
-  //         // [목요일] Rank 4: 12~13시, 18~20시
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 4, 4, 4, 0, 0,
-  //           0,
-  //         ],
-
-  //         // [금요일] Rank 3: 20~23시
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3,
-  //           3,
-  //         ],
-
-  //         // [토요일] Rank 4: 14~16시
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0,
-  //           0,
-  //         ],
-
-  //         // [일요일] 선택된 시간 없음
-  //         [
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  //           0,
-  //         ],
-  //       ];
-
-  //       // availability -> TimespanSlots[] 변환 + 순위 적용
-  //       const parsed: TimespanSlots[] = matrixToTimespans(availability);
-  //       const rankSlots = matrixToRankSlots(availability);
-
-  //       setTimetableData({ timetable: parsed });
-  //       setSlotSpans(parsed);
-  //       setRankData(rankSlots);
-  //     } catch (err) {
-  //       return;
-  //     }
-  //   };
-
-  //   fetchTimetable();
-  // }, [user_id]);
-
   useEffect(() => {
-    if (!user_id) return;
+    if (!user_id) {
+      // 로그인 체크: user_id가 없으면 EntryUser로 리다이렉트
+      navigate('../', { replace: true });
+    }
 
     const fetchTimetable = async () => {
       try {
@@ -118,7 +56,7 @@ export function EntryTimetable() {
     };
 
     fetchTimetable();
-  }, [user_id]);
+  }, [user_id, navigate]);
 
   const onSubmit = () => {
     if (!slotSpans || slotSpans.length === 0) {
@@ -131,12 +69,34 @@ export function EntryTimetable() {
     navigate('../rank');
   };
 
+  const onDeleteUser = async () => {
+    try {
+      await api.delete<{ status: string; message: string }>(
+        `/user/delete/${user_id}`,
+      );
+      reset();
+      navigate('/', { replace: true });
+    } catch (err) {
+      alert('방 나가기에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col px-5 py-7.5 gap-6">
         <Progress value={50} />
+
         <div className="flex flex-col w-full gap-1 text-left">
-          <div className="w-full">가능한 시간을 모두 선택해주세요</div>
+          <div className="flex w-full justify-between">
+            <div>가능한 시간을 모두 선택해주세요</div>
+            <Button
+              className="text-xs h-6 px-2 bg-gray-100 text-red-600 hover:bg-red-50 hover:text-red-600"
+              variant={'ghost'}
+              onClick={onDeleteUser}
+            >
+              방 나가기
+            </Button>
+          </div>
           <div className="w-full text-xs text-gray-500">
             다음 페이지에서 선호하는 순위를 선택할 수 있습니다
           </div>

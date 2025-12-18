@@ -18,6 +18,7 @@ import { buildRankMatrix } from '@/components/timetable/rankMatrix';
 export function EntryRank() {
   const navigate = useNavigate();
 
+  const reset = useEntryStore((state) => state.reset);
   const user_id = useEntryStore((state) => state.user_id);
   const timetableResult = useEntryStore((state) => state.timetable);
   const rankStore1 = useEntryStore((state) => state.rank1);
@@ -39,6 +40,13 @@ export function EntryRank() {
   const [rank3, setRank3] = useState<string>(() =>
     rankStore3 ? buildKey(rankStore3) : '',
   );
+
+  // 로그인 체크: user_id가 없으면 EntryUser로 리다이렉트
+  useEffect(() => {
+    if (!user_id) {
+      navigate('../', { replace: true });
+    }
+  }, [user_id, navigate]);
 
   useEffect(() => {
     if (!timetableResult || timetableResult.length === 0) {
@@ -126,12 +134,34 @@ export function EntryRank() {
     }
   };
 
+  const onDeleteUser = async () => {
+    try {
+      await api.delete<{ status: string; message: string }>(
+        `/user/delete/${user_id}`,
+      );
+      reset();
+      navigate('/', { replace: true });
+    } catch (err) {
+      alert('방 나가기에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col px-5 py-7.5 gap-6">
         <Progress value={75} />
+
         <div className="flex flex-col w-full gap-1 text-left">
-          <div className="w-full">선호하는 1~3순위를 선택해주세요</div>
+          <div className="flex w-full justify-between">
+            <div>선호하는 1~3순위를 선택해주세요</div>
+            <Button
+              className="text-xs h-6 px-2 bg-gray-100 text-red-600 hover:bg-red-50 hover:text-red-600"
+              variant={'ghost'}
+              onClick={onDeleteUser}
+            >
+              방 나가기
+            </Button>
+          </div>
           <div className="w-full text-xs text-gray-500">
             순위 지정이 불필요하다면 건너뛰셔도 되며, 선택되지 않은 시간은 모두
             4순위로 자동 지정됩니다
