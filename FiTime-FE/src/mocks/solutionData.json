@@ -1,20 +1,20 @@
 {
   "status": "success",
   "message": "Solution retrieved successfully",
-  "solutions": [
+  "solution": [
     {
       "day": 1,
       "start_hour": 14,
       "end_hour": 16,
       "rank": 1,
-      "unavailableUsers": []
+      "unavailable_users": []
     },
     {
       "day": 2,
       "start_hour": 10,
       "end_hour": 12,
       "rank": 2,
-      "unavailableUsers": [
+      "unavailable_users": [
         {
           "username": "지우"
         }
@@ -25,7 +25,7 @@
       "start_hour": 18,
       "end_hour": 20,
       "rank": 3,
-      "unavailableUsers": [
+      "unavailable_users": [
         {
           "username": "영민"
         },

@@ -85,10 +85,10 @@ const TimeTable = ({
 
       // Color based on priority (1 = highest priority)
       const heatmapColors = [
-        'bg-violet-700', // priority 1
-        'bg-violet-500', // priority 2
-        'bg-violet-300', // priority 3
-        'bg-violet-100', // priority 4+
+        'bg-violet-100', // priority 1
+        'bg-violet-300', // priority 2
+        'bg-violet-500', // priority 3
+        'bg-violet-700', // priority 4+
       ];
 
       // Find color index of matching priority
